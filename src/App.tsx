@@ -81,6 +81,7 @@ const App = () => {
           ...prevLogs,
           `Error: Failed to create campaigns (Status: ${response.status})`,
         ]);
+        console.log(response);
         return;
       }
 
