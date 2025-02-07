@@ -106,19 +106,19 @@ const App = () => {
   const handleDownloadTemplate = () => {
     const template = [
       [
-        "'ad_account_id",
-        "'access_token",
-        "'adset_count",
-        "'page_name",
-        "'sku",
-        "'material_code",
-        "'daily_budget",
-        "'facebook_page_id",
-        "'video_url",
-        "'headline",
-        "'primary_text",
-        "'image_url",
-        "'product",
+        "ad_account_id",
+        "access_token",
+        "adset_count",
+        "page_name",
+        "sku",
+        "material_code",
+        "daily_budget",
+        "facebook_page_id",
+        "video_url",
+        "headline",
+        "primary_text",
+        "image_url",
+        "product",
       ],
       ["'", "'", "'", "'", "'", "'", "'", "'", "'", "'", "'", "'", "'"], // Empty row with apostrophes for template
     ];
