@@ -95,7 +95,7 @@ const App = () => {
         if (responseBody.tasks && responseBody.tasks.length > 0) {
           setLogs((prevLogs) => [
             ...prevLogs,
-            `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${responseBody.tasks[0].status}`,
+            `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${responseBody.tasks[0].status} - Message: ${responseBody.tasks[0].message}`,
           ]);
         } else {
           setLogs((prevLogs) => [
