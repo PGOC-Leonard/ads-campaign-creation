@@ -46,24 +46,40 @@ const App = () => {
   const handleRun = async () => {
     setIsRunning(true);
     setLogs((prevLogs) => [...prevLogs, "Running operation..."]);
-
-    const campaigns = data.map((row) => ({
-      ad_account_id: row["ad_account_id"],
-      access_token: row["access_token"],
-      adset_count: parseInt(row["adset_count"], 10) || 0,
-      page_name: row["page_name"],
-      sku: row["sku"],
-      material_code: row["material_code"],
-      daily_budget: parseInt(row["daily_budget"], 10) || 0,
-      facebook_page_id: row["facebook_page_id"],
-      video_url: row["video_url"],
-      headline: row["headline"],
-      primary_text: row["primary_text"],
-      image_url: row["image_url"],
-      product: row["product"],
-    }));
-
-    console.log(campaigns);
+  
+    // Filter and map campaigns while removing rows with any null or undefined values
+    const campaigns = data
+      .filter((row) => {
+        // Check if any required field is null or empty
+        return Object.values(row).every((value) => value !== null && value !== "");
+      })
+      .map((row) => ({
+        ad_account_id: row["ad_account_id"],
+        access_token: row["access_token"],
+        adset_count: parseInt(row["adset_count"], 10) || 0,
+        page_name: row["page_name"],
+        sku: row["sku"],
+        material_code: row["material_code"],
+        daily_budget: parseInt(row["daily_budget"], 10) || 0,
+        facebook_page_id: row["facebook_page_id"],
+        video_url: row["video_url"],
+        headline: row["headline"],
+        primary_text: row["primary_text"],
+        image_url: row["image_url"],
+        product: row["product"],
+      }));
+  
+    if (campaigns.length === 0) {
+      setLogs((prevLogs) => [
+        ...prevLogs,
+        "Error: No valid campaigns available after filtering null data.",
+      ]);
+      setIsRunning(false);
+      return;
+    }
+  
+    console.log("Valid Campaigns Payload:", campaigns);
+  
     try {
       const response = await fetch("https://pgoccampaign.share.zrok.io/create_multiple_simple_campaigns", {
         method: "POST",
@@ -73,9 +89,9 @@ const App = () => {
         },
         body: JSON.stringify({ campaigns }),
       });
-
+  
       const contentType = response.headers.get("Content-Type");
-
+  
       if (!response.ok) {
         setLogs((prevLogs) => [
           ...prevLogs,
@@ -84,16 +100,15 @@ const App = () => {
         console.log(response);
         return;
       }
-
+  
       if (contentType && contentType.includes("application/json")) {
         const responseBody = await response.json();
-        // Continue processing the JSON response
         setLogs((prevLogs) => [
           ...prevLogs,
           `Response Status: ${response.status}`,
         ]);
         if (responseBody.tasks && responseBody.tasks.length > 0) {
-          console.log(responseBody)
+          console.log(responseBody);
           setLogs((prevLogs) => [
             ...prevLogs,
             `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${responseBody.tasks[0].status} - Message: ${responseBody.tasks[0]}`,
@@ -121,7 +136,7 @@ const App = () => {
       setIsRunning(false);
     }
   };
-
+  
   const handleDownloadTemplate = () => {
     const template = [
       [
