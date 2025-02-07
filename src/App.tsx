@@ -63,6 +63,7 @@ const App = () => {
       product: row["product"],
     }));
 
+    console.log(campaigns);
     try {
       const response = await fetch("https://pgoccampaign.share.zrok.io", {
         method: "POST",
