@@ -64,7 +64,7 @@ const App = () => {
     }));
 
     try {
-      const response = await fetch("hhttps://pgoccampaign.share.zrok.io", {
+      const response = await fetch("https://pgoccampaign.share.zrok.io", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
