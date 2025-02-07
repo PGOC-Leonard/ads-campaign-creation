@@ -77,7 +77,7 @@ const App = () => {
       if (!response.ok) {
         setLogs((prevLogs) => [
           ...prevLogs,
-          `Error: Failed to create campaigns (Status: ${response.status})`,
+          `Error: Failed to create campaigns (Status: ${response.status} Message: ${response.body})`,
         ]);
         return;
       }
