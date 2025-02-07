@@ -68,7 +68,7 @@ const App = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          skip_zrok_interstitial: "true",
+          "skip_zrok_interstitial": "true",
         },
         body: JSON.stringify({ campaigns }),
       });
