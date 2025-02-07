@@ -74,18 +74,19 @@ const App = () => {
         body: JSON.stringify({ campaigns }),
       });
 
+      const contentType = response.headers.get("Content-Type");
+
       if (!response.ok) {
         setLogs((prevLogs) => [
           ...prevLogs,
-          `Error: Failed to create campaigns (Status: ${response.status} Message: ${response.body})`,
+          `Error: Failed to create campaigns (Status: ${response.status})`,
         ]);
         return;
       }
 
-      const contentType = response.headers.get("Content-Type");
       if (contentType && contentType.includes("application/json")) {
         const responseBody = await response.json();
-        // Process the JSON response here
+        // Continue processing the JSON response
         setLogs((prevLogs) => [
           ...prevLogs,
           `Response Status: ${response.status}`,
@@ -102,7 +103,7 @@ const App = () => {
           ]);
         }
       } else {
-        const textResponse = await response.text(); // Read raw text for debugging
+        const textResponse = await response.text();
         setLogs((prevLogs) => [
           ...prevLogs,
           `Error: Expected JSON but received: ${textResponse}`,
