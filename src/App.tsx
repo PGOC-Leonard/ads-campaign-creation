@@ -69,29 +69,44 @@ const App = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "skip_zrok_interstitial": "true",
+          skip_zrok_interstitial: "true",
         },
         body: JSON.stringify({ campaigns }),
       });
 
-      const responseBody = await response.json();
-      setLogs((prevLogs) => [
-        ...prevLogs,
-        `Response Status: ${response.status}`,
-      ]);
-
       if (!response.ok) {
-        throw new Error(`Failed to create campaigns: ${response.status}`);
-      }
-
-      // Log only the first task from the response as a single-line message
-      if (responseBody.tasks && responseBody.tasks.length > 0) {
         setLogs((prevLogs) => [
           ...prevLogs,
-          `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${responseBody.tasks[0].status}`,
+          `Error: Failed to create campaigns (Status: ${response.status})`,
         ]);
+        return;
+      }
+
+      const contentType = response.headers.get("Content-Type");
+      if (contentType && contentType.includes("application/json")) {
+        const responseBody = await response.json();
+        // Process the JSON response here
+        setLogs((prevLogs) => [
+          ...prevLogs,
+          `Response Status: ${response.status}`,
+        ]);
+        if (responseBody.tasks && responseBody.tasks.length > 0) {
+          setLogs((prevLogs) => [
+            ...prevLogs,
+            `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${responseBody.tasks[0].status}`,
+          ]);
+        } else {
+          setLogs((prevLogs) => [
+            ...prevLogs,
+            "No task information available.",
+          ]);
+        }
       } else {
-        setLogs((prevLogs) => [...prevLogs, "No task information available."]);
+        const textResponse = await response.text(); // Read raw text for debugging
+        setLogs((prevLogs) => [
+          ...prevLogs,
+          `Error: Expected JSON but received: ${textResponse}`,
+        ]);
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
