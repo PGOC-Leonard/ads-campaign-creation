@@ -65,7 +65,7 @@ const App = () => {
 
     console.log(campaigns);
     try {
-      const response = await fetch("https://pgoccampaign.share.zrok.io", {
+      const response = await fetch("https://pgoccampaign.share.zrok.io/create_multiple_simple_campaigns", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
