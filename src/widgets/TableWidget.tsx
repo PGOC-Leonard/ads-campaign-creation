@@ -17,17 +17,38 @@ interface TableWidgetProps {
   data: any[];
 }
 
+const formatInterestsList = (interests: any): string => {
+  try {
+    if (typeof interests === "string") {
+      interests = JSON.parse(interests); // Parse JSON if it's a string
+    }
+
+    if (!Array.isArray(interests)) return "Invalid format";
+
+    return interests
+      .map((group) =>
+        Array.isArray(group) && group.length > 0
+          ? group.join(", ") // Convert array to comma-separated values
+          : "No Interests"
+      )
+      .join("\n"); // Each array group goes on a new line
+  } catch (error) {
+    return "Invalid format";
+  }
+};
+
+
 const StyledTableCell = styled(TableCell)(() => ({
-  padding: "16px",
+  padding: "12px",
   fontSize: "14px",
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",
-  maxWidth: "150px",
-  textAlign: "center", // Center horizontally
-  verticalAlign: "middle", // Center vertically
-  wordWrap: "break-word", // Allow words to break if they don't fit in the cell
-  fontFamily: "Arial, sans-serif", // You can change this to a font that supports emojis
+  maxWidth: "200px",
+  textAlign: "center",
+  verticalAlign: "middle",
+  wordWrap: "break-word",
+  fontFamily: "Arial, sans-serif",
 }));
 
 const StyledTableRow = styled(TableRow)(() => ({
@@ -38,63 +59,68 @@ const StyledTableRow = styled(TableRow)(() => ({
 }));
 
 export const TableWidget: React.FC<TableWidgetProps> = ({ data }) => {
-  const defaultRow = ["", "", "", "", "", "", "", "", "", "", "", "", ""];
+  const headers = [
+    "ad_account_id",
+    "access_token",
+    "adset_count",
+    "page_name",
+    "sku",
+    "material_code",
+    "interests_list",
+    "daily_budget",
+    "facebook_page_id",
+    "video_url",
+    "headline",
+    "primary_text",
+    "image_url",
+    "product",
+  ];
 
   return (
     <Card className="shadow-lg">
       <CardContent>
         <TableContainer
           component={Paper}
-          style={{ minHeight: "500px" }}
+          style={{ minHeight: "500px", maxHeight: "700px" }}
           className="overflow-auto"
         >
-          <Table>
+          <Table stickyHeader>
             {/* Table Header */}
             <TableHead>
-              <StyledTableRow
-                style={{
-                  position: "sticky",
-                  top: 0,
-                  backgroundColor: "#fff",
-                  zIndex: 1,
-                }}
-              >
-                {[
-                  "ad_account_id",
-                  "access_token",
-                  "adset_count",
-                  "page_name",
-                  "sku",
-                  "material_code",
-                  "daily_budget",
-                  "facebook_page_id",
-                  "video_url",
-                  "headline",
-                  "primary_text",
-                  "image_url",
-                  "product",
-                ].map((header, index) => (
+              <StyledTableRow>
+                {headers.map((header, index) => (
                   <StyledTableCell key={index} style={{ fontWeight: "bold" }}>
                     {header}
                   </StyledTableCell>
                 ))}
               </StyledTableRow>
             </TableHead>
+
             <TableBody>
               {data.length === 0 ? (
                 <StyledTableRow>
-                  {defaultRow.map((_, cellIndex) => (
-                    <StyledTableCell key={cellIndex}>&nbsp;</StyledTableCell>
-                  ))}
+                  <StyledTableCell colSpan={headers.length} align="center">
+                    No data available
+                  </StyledTableCell>
                 </StyledTableRow>
               ) : (
                 data.map((row: any, rowIndex: number) => (
                   <StyledTableRow key={rowIndex}>
-                    {Object.keys(row).map((key: string, cellIndex: number) => (
+                    {headers.map((key, cellIndex) => (
                       <StyledTableCell key={cellIndex}>
-                        <Tooltip title={row[key] || ""} arrow placement="top">
-                          <span>{row[key]}</span>
-                        </Tooltip>
+                        {key === "interests_list" ? (
+                          <Tooltip
+                            title={JSON.stringify(row[key], null, 2)}
+                            arrow
+                            placement="top"
+                          >
+                            <span>{formatInterestsList(row[key])}</span>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip title={row[key] ?? ""} arrow placement="top">
+                            <span>{row[key] ?? ""}</span>
+                          </Tooltip>
+                        )}
                       </StyledTableCell>
                     ))}
                   </StyledTableRow>
