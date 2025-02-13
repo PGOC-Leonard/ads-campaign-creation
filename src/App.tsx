@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Papa from "papaparse";
 import { Button } from "@mui/material";
-import { TableWidget } from "./widgets/TableWidget"; // Import TableWidget from another file
+import { TableWidget } from "./widgets/TableWidget";
+import Logo from "./assets/icon.png"; // Import TableWidget from another file
 
 const App = () => {
   const [data, setData] = useState<any[]>([]);
@@ -56,9 +57,9 @@ const App = () => {
 
   const parseInterestsList = (interestsString: string): string[][] => {
     if (!interestsString || interestsString.trim() === "") return [[]];
-  
+
     console.log("Raw interests_list before processing:", interestsString);
-  
+
     try {
       // ✅ Step 1: Ensure proper JSON format by wrapping words in quotes
       let cleanedString = interestsString
@@ -74,16 +75,16 @@ const App = () => {
             .map((word) => `"${word.trim()}"`)
             .join(", ")}]`;
         });
-  
+
       console.log("Cleaned interests_list:", cleanedString);
-  
+
       // ✅ Step 2: Ensure it starts and ends with brackets
       if (!cleanedString.startsWith("[")) cleanedString = `[${cleanedString}]`;
       if (!cleanedString.endsWith("]")) cleanedString = `${cleanedString}]`;
-  
+
       // ✅ Step 3: Parse JSON
       const parsedArray = JSON.parse(cleanedString);
-  
+
       // ✅ Step 4: Validate output as array of arrays
       if (
         Array.isArray(parsedArray) &&
@@ -92,17 +93,16 @@ const App = () => {
         const formattedArray = parsedArray.map((group) =>
           group.map((interest) => String(interest).trim())
         );
-  
+
         console.log("Formatted interests_list:", formattedArray);
         return formattedArray;
       }
     } catch (error) {
       console.error("Error parsing interests_list:", interestsString, error);
     }
-  
+
     return [[]]; // Return an empty array inside an array if parsing fails
   };
-  
 
   const handleRun = async () => {
     setIsRunning(true);
@@ -159,14 +159,17 @@ const App = () => {
     console.log("Valid Campaigns Payload:", campaigns);
 
     try {
-      const response = await fetch("http://pgoccampaign.share.zrok.io/create-campaigns", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          skip_zrok_interstitial: "true",
-        },
-        body: JSON.stringify({ campaigns }),
-      });
+      const response = await fetch(
+        "http://pgoccampaign.share.zrok.io/create-campaigns",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            skip_zrok_interstitial: "true",
+          },
+          body: JSON.stringify({ campaigns }),
+        }
+      );
 
       const contentType = response.headers.get("Content-Type");
 
@@ -189,7 +192,9 @@ const App = () => {
           console.log(responseBody);
           setLogs((prevLogs) => [
             ...prevLogs,
-            `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${responseBody.tasks[0].status} - Message: ${JSON.stringify(responseBody.tasks[0])}`,
+            `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${
+              responseBody.tasks[0].status
+            } - Message: ${JSON.stringify(responseBody.tasks[0])}`,
           ]);
         } else {
           setLogs((prevLogs) => [
@@ -261,8 +266,13 @@ const App = () => {
 
   return (
     <div className="container mx-auto p-6">
+      <div className="flex justify-center mb-4">
+        <img src={Logo} alt="PGOC Logo" className="h-16 w-auto" />
+      </div>
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold">PGOC CAMPAIGN CREATION TESTING</h1>
+        <h1 className="text-3xl font-bold">
+          PGOC CAMPAIGN CREATION TESTING v1.2
+        </h1>
       </div>
 
       <div className="mt-8 text-gray-700">
