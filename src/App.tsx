@@ -57,31 +57,31 @@ const App = () => {
 
   const parseInterestsList = (interestsString: string): string[][] => {
     if (!interestsString || interestsString.trim() === "") return [[]];
-
+  
     console.log("Raw interests_list before processing:", interestsString);
-
+  
     try {
-      // Split by "\" while trimming spaces
-      const groups = interestsString.split("\\").map((group) => group.trim());
-
+      // Split by "/" while trimming spaces
+      const groups = interestsString.split("/").map((group) => group.trim());
+  
       // Process each group separately
       const parsedArray = groups.map((group) => {
         // If the group is exactly "[]", return an empty array
         if (group === "[]") return [];
-
+  
         // Otherwise, split by commas and trim each interest
         return group.split(",").map((interest) => interest.trim());
       });
-
+  
       console.log("Formatted interests_list:", parsedArray);
       return parsedArray;
     } catch (error) {
       console.error("Error parsing interests_list:", interestsString, error);
     }
-
+  
     return [[]]; // Default to an empty nested array if parsing fails
   };
-
+  
   const handleRun = async () => {
     setIsRunning(true);
     setLogs((prevLogs) => [...prevLogs, "Running operation..."]);
@@ -223,8 +223,7 @@ const App = () => {
         "'",
         "'",
         "'",
-        "'",
-        `"[] \\ Interest1, Interest2, Interest3 \\ Interest4, Interest5, Interest 6"`, // New format with \
+        `"[] / Interest1, Interest2, Interest3 / Interest4, Interest5, Interest6"`, // Changed to use "/"
         "'",
         "'",
         "'",
@@ -234,7 +233,7 @@ const App = () => {
         "'",
       ],
     ];
-
+  
     const csvContent = template.map((row) => row.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=UTF-8" });
     const link = document.createElement("a");
@@ -242,7 +241,7 @@ const App = () => {
     link.download = "template.csv";
     link.click();
   };
-
+  
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-center mb-4">
