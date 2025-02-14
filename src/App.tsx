@@ -224,7 +224,7 @@ const App = () => {
         "'",
         "'",
         "'",
-        `"Interest1, Interest2, Interest3 \\ Interest4, Interest5 \\ []"`, // New format with \
+        `"[] \\ Interest1, Interest2, Interest3 \\ Interest4, Interest5, Interest 6"`, // New format with \
         "'",
         "'",
         "'",
