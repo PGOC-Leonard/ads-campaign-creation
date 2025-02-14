@@ -288,8 +288,8 @@ const App = () => {
           </li>
           <li>
             Ensure the `interests_list` column follows this format: Use
-            `\` as a delimiter between interest groups - Example values: -{" "}
-            <b>`[] \ Interest1, Interest2, Interest3 \ Interest4, Interest5 `</b>
+            `/` as a delimiter between interest groups - Example values: -{" "}
+            <b>`[] / Interest1, Interest2, Interest3 / Interest4, Interest5 `</b>
           </li>
           <li>
             Use <b>[]</b> for empty Interest List
