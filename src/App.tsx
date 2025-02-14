@@ -61,93 +61,36 @@ const App = () => {
     console.log("Raw interests_list before processing:", interestsString);
 
     try {
-      // ✅ Step 1: Ensure proper JSON format by wrapping words in quotes
-      let cleanedString = interestsString
-        .trim()
-        .replace(/'/g, '"') // Convert single quotes to double quotes
-        .replace(/\s*,\s*]/g, "]") // Remove trailing commas before closing brackets
-        .replace(/\s*,\s*$/g, "") // Remove extra comma at the end
-        .replace(/\[([^\[\]]+)]/g, (match) => {
-          // Wrap each word in double quotes inside each []
-          return `[${match
-            .slice(1, -1)
-            .split(",")
-            .map((word) => `"${word.trim()}"`)
-            .join(", ")}]`;
-        });
+      // Split by "\" while trimming spaces
+      const groups = interestsString.split("\\").map((group) => group.trim());
 
-      console.log("Cleaned interests_list:", cleanedString);
+      // Process each group separately
+      const parsedArray = groups.map((group) => {
+        // If the group is exactly "[]", return an empty array
+        if (group === "[]") return [];
 
-      // ✅ Step 2: Ensure it starts and ends with brackets
-      if (!cleanedString.startsWith("[")) cleanedString = `[${cleanedString}]`;
-      if (!cleanedString.endsWith("]")) cleanedString = `${cleanedString}]`;
+        // Otherwise, split by commas and trim each interest
+        return group.split(",").map((interest) => interest.trim());
+      });
 
-      // ✅ Step 3: Parse JSON
-      const parsedArray = JSON.parse(cleanedString);
-
-      // ✅ Step 4: Validate output as array of arrays
-      if (
-        Array.isArray(parsedArray) &&
-        parsedArray.every((group) => Array.isArray(group))
-      ) {
-        const formattedArray = parsedArray.map((group) =>
-          group.map((interest) => String(interest).trim())
-        );
-
-        console.log("Formatted interests_list:", formattedArray);
-        return formattedArray;
-      }
+      console.log("Formatted interests_list:", parsedArray);
+      return parsedArray;
     } catch (error) {
       console.error("Error parsing interests_list:", interestsString, error);
     }
 
-    return [[]]; // Return an empty array inside an array if parsing fails
+    return [[]]; // Default to an empty nested array if parsing fails
   };
 
   const handleRun = async () => {
     setIsRunning(true);
     setLogs((prevLogs) => [...prevLogs, "Running operation..."]);
-    // console.log(`data:${JSON.stringify(data)}`);
-
-    const campaigns = data
-      .filter((row) =>
-        Object.values(row).every((value) => value !== null && value !== "")
-      )
-      .map((row) => {
-        let parsedInterests = row["interests_list"];
-
-        if (typeof parsedInterests === "string") {
-          try {
-            parsedInterests = JSON.parse(parsedInterests);
-          } catch (error) {
-            console.error(
-              "Error parsing interests_list:",
-              parsedInterests,
-              error
-            );
-            parsedInterests = [[]]; // Default to empty array if parsing fails
-          }
-        }
-
-        return {
-          ad_account_id: row["ad_account_id"],
-          access_token: row["access_token"],
-          adset_count: parseInt(row["adset_count"], 10) || 0,
-          page_name: row["page_name"],
-          sku: row["sku"],
-          material_code: row["material_code"],
-          daily_budget: parseInt(row["daily_budget"], 10) || 0,
-          facebook_page_id: row["facebook_page_id"],
-          video_url: row["video_url"],
-          headline: row["headline"],
-          primary_text: row["primary_text"],
-          image_url: row["image_url"],
-          product: row["product"],
-          interests_list: parsedInterests, // Ensure it's a parsed array
-        };
-      });
-
-    if (campaigns.length === 0) {
+  
+    const validCampaigns = data.filter((row) =>
+      Object.values(row).every((value) => value !== null && value !== "")
+    );
+  
+    if (validCampaigns.length === 0) {
       setLogs((prevLogs) => [
         ...prevLogs,
         "Error: No valid campaigns available after filtering null data.",
@@ -155,77 +98,113 @@ const App = () => {
       setIsRunning(false);
       return;
     }
-
-    console.log("Valid Campaigns Payload:", campaigns);
-
-    try {
-      const response = await fetch(
-        "https://pgoccampaign.share.zrok.io/create-campaigns",
-        {
+  
+    for (const row of validCampaigns) {
+      let parsedInterests = row["interests_list"];
+  
+      if (typeof parsedInterests === "string") {
+        try {
+          parsedInterests = JSON.parse(parsedInterests);
+        } catch (error) {
+          console.error("Error parsing interests_list:", parsedInterests, error);
+          parsedInterests = [[]]; // Default to empty array if parsing fails
+        }
+      }
+  
+      const requestBody = {
+        user_id: 1, // Static user ID (update if dynamic)
+        campaigns: [
+          {
+            ad_account_id: row["ad_account_id"],
+            access_token: row["access_token"],
+            page_name: row["page_name"],
+            sku: row["sku"],
+            material_code: row["material_code"],
+            daily_budget: parseInt(row["daily_budget"], 10) || 0,
+            facebook_page_id: row["facebook_page_id"],
+            video_url: row["video_url"],
+            headline: row["headline"],
+            primary_text: row["primary_text"],
+            image_url: row["image_url"],
+            product: row["product"],
+            interests_list: parsedInterests, // Ensure it's a parsed array
+          },
+        ],
+      };
+  
+      try {
+        const response = await fetch("https://pgoccampaign.share.zrok.io/create-campaigns", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             skip_zrok_interstitial: "true",
           },
-          body: JSON.stringify({ campaigns }),
-        }
-      );
-
-      const contentType = response.headers.get("Content-Type");
-
-      if (!response.ok) {
-        setLogs((prevLogs) => [
-          ...prevLogs,
-          `Error: Failed to create campaigns (Status: ${response.status})`,
-        ]);
-        console.log(response);
-        return;
-      }
-
-      if (contentType && contentType.includes("application/json")) {
-        const responseBody = await response.json();
-        setLogs((prevLogs) => [
-          ...prevLogs,
-          `Response Status: ${response.status}`,
-        ]);
-        if (responseBody.tasks && responseBody.tasks.length > 0) {
-          console.log(responseBody);
+          body: JSON.stringify(requestBody),
+        });
+  
+        const contentType = response.headers.get("Content-Type");
+  
+        if (!response.ok) {
           setLogs((prevLogs) => [
             ...prevLogs,
-            `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${
-              responseBody.tasks[0].status
-            } - Message: ${JSON.stringify(responseBody.tasks[0])}`,
+            `Error: Failed to create campaign for SKU ${row["sku"]} (Status: ${response.status})`,
+          ]);
+          console.log(response);
+          continue; // Continue to the next campaign even if this one fails
+        }
+  
+        if (contentType && contentType.includes("application/json")) {
+          const responseBody = await response.json();
+          setLogs((prevLogs) => [
+            ...prevLogs,
+            `Response for SKU ${row["sku"]}: Status ${response.status}`,
+          ]);
+          if (responseBody.tasks && responseBody.tasks.length > 0) {
+            console.log(responseBody);
+            setLogs((prevLogs) => [
+              ...prevLogs,
+              `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${
+                responseBody.tasks[0].status
+              } - Message: ${JSON.stringify(responseBody.tasks[0])}`,
+            ]);
+          } else {
+            setLogs((prevLogs) => [
+              ...prevLogs,
+              `No task information available for SKU ${row["sku"]}.`,
+            ]);
+          }
+        } else {
+          const textResponse = await response.text();
+          setLogs((prevLogs) => [
+            ...prevLogs,
+            `Error: Expected JSON but received for SKU ${row["sku"]}: ${JSON.stringify(
+              textResponse
+            )}`,
+          ]);
+        }
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setLogs((prevLogs) => [
+            ...prevLogs,
+            `Error for SKU ${row["sku"]}: ${error.message}`,
           ]);
         } else {
           setLogs((prevLogs) => [
             ...prevLogs,
-            "No task information available.",
+            `Unknown error occurred for SKU ${row["sku"]}`,
           ]);
         }
-      } else {
-        const textResponse = await response.text();
-        setLogs((prevLogs) => [
-          ...prevLogs,
-          `Error: Expected JSON but received: ${JSON.stringify(textResponse)}`,
-        ]);
       }
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        setLogs((prevLogs) => [...prevLogs, `Error: ${error.message}`]);
-      } else {
-        setLogs((prevLogs) => [...prevLogs, "Unknown error occurred"]);
-      }
-    } finally {
-      setIsRunning(false);
     }
+  
+    setIsRunning(false);
   };
-
+  
   const handleDownloadTemplate = () => {
     const template = [
       [
         "ad_account_id",
         "access_token",
-        "adset_count",
         "page_name",
         "sku",
         "material_code",
@@ -245,7 +224,7 @@ const App = () => {
         "'",
         "'",
         "'",
-        `"[[Interest1, Interest2, Interest3], [], []]"`, // One single cell
+        `"Interest1, Interest2, Interest3 \\ Interest4, Interest5 \\ []"`, // New format with \
         "'",
         "'",
         "'",
@@ -271,7 +250,7 @@ const App = () => {
       </div>
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold">
-          PGOC CAMPAIGN CREATION TESTING v1.2
+          PGOC CAMPAIGN CREATION TESTING v1.3
         </h1>
       </div>
 
@@ -309,47 +288,58 @@ const App = () => {
             before running the operation.
           </li>
           <li>
-            Ensure the interests_list column contains nested lists correctly.
+            Ensure the `interests_list` column follows this format: Use
+            `\` as a delimiter between interest groups - Example values: -{" "}
+            <b>`[] \ Interest1, Interest2, Interest3 \ Interest4, Interest5 `</b>
           </li>
           <li>
-            Example:{" "}
-            <b>[Self-confidence, Socializing, Beauty], [Yoga, Wellness]</b>
+            Use <b>[]</b> for empty Interest List
+          </li>
+          <li>
+            The system will split these values automatically into groups before
+            processing.
           </li>
         </ul>
       </div>
 
       <div className="flex mb-4 gap-4">
-        <div className="flex flex-col gap-4 mt-10">
-          <Button
-            variant="contained"
-            color="primary"
-            component="label"
-            className="py-2 text-white"
-            style={{ width: "150px" }}
-          >
-            Import CSV
-            <input type="file" onChange={handleFileUpload} hidden />
-          </Button>
+        <div className="flex mb-4 gap-4">
+          <div className="flex flex-col gap-4 mt-10">
+            {/* Green Button */}
+            <Button
+              variant="contained"
+              style={{
+                backgroundColor: "green",
+                color: "white",
+                width: "150px",
+              }}
+              component="label"
+              className="py-2"
+            >
+              Import CSV
+              <input type="file" onChange={handleFileUpload} hidden />
+            </Button>
 
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleRun}
-            disabled={isRunning}
-            className="py-2 text-white"
-            style={{ width: "150px" }}
-          >
-            {isRunning ? "Running..." : "Run"}
-          </Button>
+            {/* Red Button */}
+            <Button
+              variant="contained"
+              style={{ backgroundColor: "red", color: "white", width: "150px" }}
+              onClick={handleRun}
+              disabled={isRunning}
+              className="py-2"
+            >
+              {isRunning ? "Running..." : "Run"}
+            </Button>
 
-          <Button
-            variant="outlined"
-            onClick={handleDownloadTemplate}
-            className="py-2 text-black"
-            style={{ width: "150px" }}
-          >
-            Download Template
-          </Button>
+            <Button
+              variant="outlined"
+              onClick={handleDownloadTemplate}
+              className="py-2 text-black"
+              style={{ width: "150px" }}
+            >
+              Download Template
+            </Button>
+          </div>
         </div>
 
         <div

@@ -62,7 +62,6 @@ export const TableWidget: React.FC<TableWidgetProps> = ({ data }) => {
   const headers = [
     "ad_account_id",
     "access_token",
-    "adset_count",
     "page_name",
     "sku",
     "material_code",
