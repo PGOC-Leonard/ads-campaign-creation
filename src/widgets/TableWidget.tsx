@@ -29,14 +29,13 @@ const formatInterestsList = (interests: any): string => {
       .map((group) =>
         Array.isArray(group) && group.length > 0
           ? group.join(", ") // Convert array to comma-separated values
-          : "No Interests"
+          : "No Interests,"
       )
       .join("\n"); // Each array group goes on a new line
   } catch (error) {
     return "Invalid format";
   }
 };
-
 
 const StyledTableCell = styled(TableCell)(() => ({
   padding: "12px",
