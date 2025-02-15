@@ -255,7 +255,7 @@ const App = () => {
       </div>
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold">
-          PGOC CAMPAIGN CREATION TESTING v1.3
+          PGOC CAMPAIGN CREATION TESTING v1.4
         </h1>
       </div>
 
