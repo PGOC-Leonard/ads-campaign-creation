@@ -127,7 +127,9 @@ const App = () => {
             primary_text: row["primary_text"],
             image_url: row["image_url"],
             product: row["product"],
-            interests_list: parsedInterests, // Ensure it's a parsed array
+            interests_list: parsedInterests,
+            start_date: row ["start_date (YYYY-MM-DD)"],
+            start_time: row ["start_time (HH-MM-SS)"] // Ensure it's a parsed array
           },
         ],
       };
@@ -216,6 +218,8 @@ const App = () => {
         "primary_text",
         "image_url",
         "product",
+        "start_date (YYYY-MM-DD)",
+        "start_time (HH-MM-SS)"
       ],
       [
         "'",
@@ -231,6 +235,8 @@ const App = () => {
         "'",
         "'",
         "'",
+        "YYYY-MM-DD",
+        "HH-MM-SS"
       ],
     ];
   

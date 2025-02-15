@@ -72,6 +72,8 @@ export const TableWidget: React.FC<TableWidgetProps> = ({ data }) => {
     "primary_text",
     "image_url",
     "product",
+    "start_date (YYYY-MM-DD)",
+    "start_time (HH-MM-SS)"
   ];
 
   return (
