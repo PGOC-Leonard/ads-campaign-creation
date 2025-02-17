@@ -39,15 +39,8 @@ const App = () => {
                 "Raw interests_list from CSV:",
                 item["interests_list"]
               );
-              console.log(
-                "Raw excluded_ph_region from CSV:",
-                item["excluded_ph_region"]
-              );
               item["interests_list"] = parseInterestsList(
                 item["interests_list"]
-              );
-              item["excluded_ph_region"] = parseExcludedPHRegion(
-                item["excluded_ph_region"]
               );
             });
 
@@ -64,67 +57,39 @@ const App = () => {
 
   const parseInterestsList = (interestsString: string): string[][] => {
     if (!interestsString || interestsString.trim() === "") return [[]];
-
+  
     console.log("Raw interests_list before processing:", interestsString);
-
+  
     try {
       // Split by "/" while trimming spaces
       const groups = interestsString.split("/").map((group) => group.trim());
-
+  
       // Process each group separately
       const parsedArray = groups.map((group) => {
         // If the group is exactly "[]", return an empty array
         if (group === "[]") return [];
-
+  
         // Otherwise, split by commas and trim each interest
         return group.split(",").map((interest) => interest.trim());
       });
-
+  
       console.log("Formatted interests_list:", parsedArray);
       return parsedArray;
     } catch (error) {
       console.error("Error parsing interests_list:", interestsString, error);
     }
-
+  
     return [[]]; // Default to an empty nested array if parsing fails
   };
-
-  // New function to parse the excluded_ph_region
-  const parseExcludedPHRegion = (regionString: string): string[][] => {
-    if (!regionString || regionString.trim() === "") return [[]];
-
-    console.log("Raw excluded_ph_region before processing:", regionString);
-
-    try {
-      // Split by "/" while trimming spaces
-      const groups = regionString.split("/").map((group) => group.trim());
-
-      // Process each group separately
-      const parsedArray = groups.map((group) => {
-        // If the group is exactly "[]", return an empty array
-        if (group === "[]") return [];
-
-        // Otherwise, split by commas and trim each region
-        return group.split(",").map((region) => region.trim());
-      });
-
-      console.log("Formatted excluded_ph_region:", parsedArray);
-      return parsedArray;
-    } catch (error) {
-      console.error("Error parsing excluded_ph_region:", regionString, error);
-    }
-
-    return [[]]; // Default to an empty nested array if parsing fails
-  };
-
+  
   const handleRun = async () => {
     setIsRunning(true);
     setLogs((prevLogs) => [...prevLogs, "Running operation..."]);
-
+  
     const validCampaigns = data.filter((row) =>
       Object.values(row).every((value) => value !== null && value !== "")
     );
-
+  
     if (validCampaigns.length === 0) {
       setLogs((prevLogs) => [
         ...prevLogs,
@@ -133,24 +98,19 @@ const App = () => {
       setIsRunning(false);
       return;
     }
-
+  
     for (const row of validCampaigns) {
       let parsedInterests = row["interests_list"];
-      let parsedExcludedRegions = row["excluded_ph_region"];
-
+  
       if (typeof parsedInterests === "string") {
         try {
           parsedInterests = JSON.parse(parsedInterests);
         } catch (error) {
-          console.error(
-            "Error parsing interests_list:",
-            parsedInterests,
-            error
-          );
+          console.error("Error parsing interests_list:", parsedInterests, error);
           parsedInterests = [[]]; // Default to empty array if parsing fails
         }
       }
-
+  
       const requestBody = {
         user_id: 1, // Static user ID (update if dynamic)
         campaigns: [
@@ -168,30 +128,24 @@ const App = () => {
             image_url: row["image_url"],
             product: row["product"],
             interests_list: parsedInterests,
-            excluded_ph_region: parsedExcludedRegions, // Add parsed excluded_ph_region
-            start_date: row["start_date (YYYY-MM-DD)"],
-            start_time: row["start_time (HH-MM-SS)"], // Ensure it's a parsed array
+            start_date: row ["start_date (YYYY-MM-DD)"],
+            start_time: row ["start_time (HH-MM-SS)"] // Ensure it's a parsed array
           },
         ],
       };
-
-      console.log(`Campaign Data : ${JSON.stringify(requestBody)}`)
-
+  
       try {
-        const response = await fetch(
-          "https://pgoccampaign.share.zrok.io/api/v1/campaign/create-campaigns",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              skip_zrok_interstitial: "true",
-            },
-            body: JSON.stringify(requestBody),
-          }
-        );
-
+        const response = await fetch("https://pgoccampaign.share.zrok.io/create-campaigns", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            skip_zrok_interstitial: "true",
+          },
+          body: JSON.stringify(requestBody),
+        });
+  
         const contentType = response.headers.get("Content-Type");
-
+  
         if (!response.ok) {
           setLogs((prevLogs) => [
             ...prevLogs,
@@ -200,7 +154,7 @@ const App = () => {
           console.log(response);
           continue; // Continue to the next campaign even if this one fails
         }
-
+  
         if (contentType && contentType.includes("application/json")) {
           const responseBody = await response.json();
           setLogs((prevLogs) => [
@@ -225,9 +179,9 @@ const App = () => {
           const textResponse = await response.text();
           setLogs((prevLogs) => [
             ...prevLogs,
-            `Error: Expected JSON but received for SKU ${
-              row["sku"]
-            }: ${JSON.stringify(textResponse)}`,
+            `Error: Expected JSON but received for SKU ${row["sku"]}: ${JSON.stringify(
+              textResponse
+            )}`,
           ]);
         }
       } catch (error: unknown) {
@@ -244,10 +198,10 @@ const App = () => {
         }
       }
     }
-
+  
     setIsRunning(false);
   };
-
+  
   const handleDownloadTemplate = () => {
     const template = [
       [
@@ -265,8 +219,7 @@ const App = () => {
         "image_url",
         "product",
         "start_date (YYYY-MM-DD)",
-        "start_time (HH-MM-SS)",
-        "excluded_ph_region"
+        "start_time (HH-MM-SS)"
       ],
       [
         "'",
@@ -283,11 +236,10 @@ const App = () => {
         "'",
         "'",
         "YYYY-MM-DD",
-        "HH-MM-SS",
-        `"Zamboanga Peninsula,Northern Mindanao,Davao Region,Soccsksargen,Caraga,Autonomous Region in Muslim Mindanao"`
+        "HH-MM-SS"
       ],
     ];
-
+  
     const csvContent = template.map((row) => row.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=UTF-8" });
     const link = document.createElement("a");
@@ -295,7 +247,7 @@ const App = () => {
     link.download = "template.csv";
     link.click();
   };
-
+  
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-center mb-4">
@@ -303,7 +255,7 @@ const App = () => {
       </div>
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold">
-          PGOC CAMPAIGN CREATION TESTING v1.5
+          PGOC CAMPAIGN CREATION TESTING v1.4
         </h1>
       </div>
 
@@ -341,11 +293,9 @@ const App = () => {
             before running the operation.
           </li>
           <li>
-            Ensure the `interests_list` column follows this format: Use `/` as a
-            delimiter between interest groups - Example values: -{" "}
-            <b>
-              `[] / Interest1, Interest2, Interest3 / Interest4, Interest5 `
-            </b>
+            Ensure the `interests_list` column follows this format: Use
+            `/` as a delimiter between interest groups - Example values: -{" "}
+            <b>`[] / Interest1, Interest2, Interest3 / Interest4, Interest5 `</b>
           </li>
           <li>
             Use <b>[]</b> for empty Interest List

@@ -73,8 +73,7 @@ export const TableWidget: React.FC<TableWidgetProps> = ({ data }) => {
     "image_url",
     "product",
     "start_date (YYYY-MM-DD)",
-    "start_time (HH-MM-SS)",
-    "excluded_ph_region"
+    "start_time (HH-MM-SS)"
   ];
 
   return (
