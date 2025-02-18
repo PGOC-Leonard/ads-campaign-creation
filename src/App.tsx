@@ -61,8 +61,11 @@ const App = () => {
     console.log("Raw interests_list before processing:", interestsString);
   
     try {
-      // Split by "/" while trimming spaces
-      const groups = interestsString.split("/").map((group) => group.trim());
+      // Split by "/" and handle empty or space-only groups as "[]"
+      const groups = interestsString.split("/").map((group) => {
+        const trimmedGroup = group.trim();
+        return trimmedGroup === "" ? "[]" : trimmedGroup;
+      });
   
       // Process each group separately
       const parsedArray = groups.map((group) => {
@@ -77,6 +80,37 @@ const App = () => {
       return parsedArray;
     } catch (error) {
       console.error("Error parsing interests_list:", interestsString, error);
+    }
+  
+    return [[]]; // Default to an empty nested array if parsing fails
+  };
+  
+  // New function to parse the excluded_ph_region
+  const parseExcludedPHRegion = (regionString: string): string[][] => {
+    if (!regionString || regionString.trim() === "") return [[]];
+  
+    console.log("Raw excluded_ph_region before processing:", regionString);
+  
+    try {
+      // Split by "/" and handle empty or space-only groups as "[]"
+      const groups = regionString.split("/").map((group) => {
+        const trimmedGroup = group.trim();
+        return trimmedGroup === "" ? "[]" : trimmedGroup;
+      });
+  
+      // Process each group separately
+      const parsedArray = groups.map((group) => {
+        // If the group is exactly "[]", return an empty array
+        if (group === "[]") return [];
+  
+        // Otherwise, split by commas and trim each region
+        return group.split(",").map((region) => region.trim());
+      });
+  
+      console.log("Formatted excluded_ph_region:", parsedArray);
+      return parsedArray;
+    } catch (error) {
+      console.error("Error parsing excluded_ph_region:", regionString, error);
     }
   
     return [[]]; // Default to an empty nested array if parsing fails
@@ -110,7 +144,8 @@ const App = () => {
           parsedInterests = [[]]; // Default to empty array if parsing fails
         }
       }
-  
+      
+
       const requestBody = {
         user_id: 1, // Static user ID (update if dynamic)
         campaigns: [
