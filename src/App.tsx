@@ -175,7 +175,7 @@ const App = () => {
             image_url: row["image_url"],
             product: row["product"],
             interests_list: parsedInterests,
-            excluded_ph_region: parsedExcludedRegions, // Add parsed excluded_ph_region
+            exclude_ph_region: parsedExcludedRegions, // Add parsed excluded_ph_region
             start_date: row["start_date (YYYY-MM-DD)"],
             start_time: row["start_time (HH-MM-SS)"], // Ensure it's a parsed array
           },
