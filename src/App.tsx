@@ -64,59 +64,65 @@ const App = () => {
 
   const parseInterestsList = (interestsString: string): string[][] => {
     if (!interestsString || interestsString.trim() === "") return [[]];
-
+  
     console.log("Raw interests_list before processing:", interestsString);
-
+  
     try {
-      // Split by "/" while trimming spaces
-      const groups = interestsString.split("/").map((group) => group.trim());
-
+      // Split by "/" and handle empty or space-only groups as "[]"
+      const groups = interestsString.split("/").map((group) => {
+        const trimmedGroup = group.trim();
+        return trimmedGroup === "" ? "[]" : trimmedGroup;
+      });
+  
       // Process each group separately
       const parsedArray = groups.map((group) => {
         // If the group is exactly "[]", return an empty array
         if (group === "[]") return [];
-
+  
         // Otherwise, split by commas and trim each interest
         return group.split(",").map((interest) => interest.trim());
       });
-
+  
       console.log("Formatted interests_list:", parsedArray);
       return parsedArray;
     } catch (error) {
       console.error("Error parsing interests_list:", interestsString, error);
     }
-
+  
     return [[]]; // Default to an empty nested array if parsing fails
   };
-
+  
   // New function to parse the excluded_ph_region
   const parseExcludedPHRegion = (regionString: string): string[][] => {
     if (!regionString || regionString.trim() === "") return [[]];
-
+  
     console.log("Raw excluded_ph_region before processing:", regionString);
-
+  
     try {
-      // Split by "/" while trimming spaces
-      const groups = regionString.split("/").map((group) => group.trim());
-
+      // Split by "/" and handle empty or space-only groups as "[]"
+      const groups = regionString.split("/").map((group) => {
+        const trimmedGroup = group.trim();
+        return trimmedGroup === "" ? "[]" : trimmedGroup;
+      });
+  
       // Process each group separately
       const parsedArray = groups.map((group) => {
         // If the group is exactly "[]", return an empty array
         if (group === "[]") return [];
-
+  
         // Otherwise, split by commas and trim each region
         return group.split(",").map((region) => region.trim());
       });
-
+  
       console.log("Formatted excluded_ph_region:", parsedArray);
       return parsedArray;
     } catch (error) {
       console.error("Error parsing excluded_ph_region:", regionString, error);
     }
-
+  
     return [[]]; // Default to an empty nested array if parsing fails
   };
-
+  
   const handleRun = async () => {
     setIsRunning(true);
     setLogs((prevLogs) => [...prevLogs, "Running operation..."]);
@@ -150,6 +156,7 @@ const App = () => {
           parsedInterests = [[]]; // Default to empty array if parsing fails
         }
       }
+      
 
       const requestBody = {
         user_id: 1, // Static user ID (update if dynamic)
@@ -177,72 +184,72 @@ const App = () => {
 
       console.log(`Campaign Data : ${JSON.stringify(requestBody)}`)
 
-      try {
-        const response = await fetch(
-          "https://pgoccampaign.share.zrok.io/api/v1/campaign/create-campaigns",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              skip_zrok_interstitial: "true",
-            },
-            body: JSON.stringify(requestBody),
-          }
-        );
+      // try {
+      //   const response = await fetch(
+      //     "https://pgoccampaign.share.zrok.io/api/v1/campaign/create-campaigns",
+      //     {
+      //       method: "POST",
+      //       headers: {
+      //         "Content-Type": "application/json",
+      //         skip_zrok_interstitial: "true",
+      //       },
+      //       body: JSON.stringify(requestBody),
+      //     }
+      //   );
 
-        const contentType = response.headers.get("Content-Type");
+      //   const contentType = response.headers.get("Content-Type");
 
-        if (!response.ok) {
-          setLogs((prevLogs) => [
-            ...prevLogs,
-            `Error: Failed to create campaign for SKU ${row["sku"]} (Status: ${response.status})`,
-          ]);
-          console.log(response);
-          continue; // Continue to the next campaign even if this one fails
-        }
+      //   if (!response.ok) {
+      //     setLogs((prevLogs) => [
+      //       ...prevLogs,
+      //       `Error: Failed to create campaign for SKU ${row["sku"]} (Status: ${response.status})`,
+      //     ]);
+      //     console.log(response);
+      //     continue; // Continue to the next campaign even if this one fails
+      //   }
 
-        if (contentType && contentType.includes("application/json")) {
-          const responseBody = await response.json();
-          setLogs((prevLogs) => [
-            ...prevLogs,
-            `Response for SKU ${row["sku"]}: Status ${response.status}`,
-          ]);
-          if (responseBody.tasks && responseBody.tasks.length > 0) {
-            console.log(responseBody);
-            setLogs((prevLogs) => [
-              ...prevLogs,
-              `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${
-                responseBody.tasks[0].status
-              } - Message: ${JSON.stringify(responseBody.tasks[0])}`,
-            ]);
-          } else {
-            setLogs((prevLogs) => [
-              ...prevLogs,
-              `No task information available for SKU ${row["sku"]}.`,
-            ]);
-          }
-        } else {
-          const textResponse = await response.text();
-          setLogs((prevLogs) => [
-            ...prevLogs,
-            `Error: Expected JSON but received for SKU ${
-              row["sku"]
-            }: ${JSON.stringify(textResponse)}`,
-          ]);
-        }
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          setLogs((prevLogs) => [
-            ...prevLogs,
-            `Error for SKU ${row["sku"]}: ${error.message}`,
-          ]);
-        } else {
-          setLogs((prevLogs) => [
-            ...prevLogs,
-            `Unknown error occurred for SKU ${row["sku"]}`,
-          ]);
-        }
-      }
+      //   if (contentType && contentType.includes("application/json")) {
+      //     const responseBody = await response.json();
+      //     setLogs((prevLogs) => [
+      //       ...prevLogs,
+      //       `Response for SKU ${row["sku"]}: Status ${response.status}`,
+      //     ]);
+      //     if (responseBody.tasks && responseBody.tasks.length > 0) {
+      //       console.log(responseBody);
+      //       setLogs((prevLogs) => [
+      //         ...prevLogs,
+      //         `Task Created: ${responseBody.tasks[0].campaign_name} - Status: ${
+      //           responseBody.tasks[0].status
+      //         } - Message: ${JSON.stringify(responseBody.tasks[0])}`,
+      //       ]);
+      //     } else {
+      //       setLogs((prevLogs) => [
+      //         ...prevLogs,
+      //         `No task information available for SKU ${row["sku"]}.`,
+      //       ]);
+      //     }
+      //   } else {
+      //     const textResponse = await response.text();
+      //     setLogs((prevLogs) => [
+      //       ...prevLogs,
+      //       `Error: Expected JSON but received for SKU ${
+      //         row["sku"]
+      //       }: ${JSON.stringify(textResponse)}`,
+      //     ]);
+      //   }
+      // } catch (error: unknown) {
+      //   if (error instanceof Error) {
+      //     setLogs((prevLogs) => [
+      //       ...prevLogs,
+      //       `Error for SKU ${row["sku"]}: ${error.message}`,
+      //     ]);
+      //   } else {
+      //     setLogs((prevLogs) => [
+      //       ...prevLogs,
+      //       `Unknown error occurred for SKU ${row["sku"]}`,
+      //     ]);
+      //   }
+      // }
     }
 
     setIsRunning(false);

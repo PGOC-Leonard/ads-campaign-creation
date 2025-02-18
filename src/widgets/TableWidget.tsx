@@ -17,19 +17,19 @@ interface TableWidgetProps {
   data: any[];
 }
 
-const formatInterestsList = (interests: any): string => {
+const formatList = (data: any): string => {
   try {
-    if (typeof interests === "string") {
-      interests = JSON.parse(interests); // Parse JSON if it's a string
+    if (typeof data === "string") {
+      data = JSON.parse(data); // Parse JSON if it's a string
     }
 
-    if (!Array.isArray(interests)) return "Invalid format";
+    if (!Array.isArray(data)) return "Invalid format";
 
-    return interests
+    return data
       .map((group) =>
         Array.isArray(group) && group.length > 0
           ? group.join(", ") // Convert array to comma-separated values
-          : "No Interests,"
+          : "No Data,"
       )
       .join("\n"); // Each array group goes on a new line
   } catch (error) {
@@ -74,7 +74,7 @@ export const TableWidget: React.FC<TableWidgetProps> = ({ data }) => {
     "product",
     "start_date (YYYY-MM-DD)",
     "start_time (HH-MM-SS)",
-    "excluded_ph_region"
+    "excluded_ph_region",
   ];
 
   return (
@@ -109,13 +109,9 @@ export const TableWidget: React.FC<TableWidgetProps> = ({ data }) => {
                   <StyledTableRow key={rowIndex}>
                     {headers.map((key, cellIndex) => (
                       <StyledTableCell key={cellIndex}>
-                        {key === "interests_list" ? (
-                          <Tooltip
-                            title={JSON.stringify(row[key], null, 2)}
-                            arrow
-                            placement="top"
-                          >
-                            <span>{formatInterestsList(row[key])}</span>
+                        {key === "interests_list" || key === "excluded_ph_region" ? (
+                          <Tooltip title={JSON.stringify(row[key], null, 2)} arrow placement="top">
+                            <span>{formatList(row[key])}</span>
                           </Tooltip>
                         ) : (
                           <Tooltip title={row[key] ?? ""} arrow placement="top">
