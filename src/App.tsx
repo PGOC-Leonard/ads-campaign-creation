@@ -64,65 +64,65 @@ const App = () => {
 
   const parseInterestsList = (interestsString: string): string[][] => {
     if (!interestsString || interestsString.trim() === "") return [[]];
-  
+
     console.log("Raw interests_list before processing:", interestsString);
-  
+
     try {
       // Split by "/" and handle empty or space-only groups as "[]"
       const groups = interestsString.split("/").map((group) => {
         const trimmedGroup = group.trim();
         return trimmedGroup === "" ? "[]" : trimmedGroup;
       });
-  
+
       // Process each group separately
       const parsedArray = groups.map((group) => {
         // If the group is exactly "[]", return an empty array
         if (group === "[]") return [];
-  
+
         // Otherwise, split by commas and trim each interest
         return group.split(",").map((interest) => interest.trim());
       });
-  
+
       console.log("Formatted interests_list:", parsedArray);
       return parsedArray;
     } catch (error) {
       console.error("Error parsing interests_list:", interestsString, error);
     }
-  
+
     return [[]]; // Default to an empty nested array if parsing fails
   };
-  
+
   // New function to parse the excluded_ph_region
   const parseExcludedPHRegion = (regionString: string): string[][] => {
     if (!regionString || regionString.trim() === "") return [[]];
-  
+
     console.log("Raw excluded_ph_region before processing:", regionString);
-  
+
     try {
       // Split by "/" and handle empty or space-only groups as "[]"
       const groups = regionString.split("/").map((group) => {
         const trimmedGroup = group.trim();
         return trimmedGroup === "" ? "[]" : trimmedGroup;
       });
-  
+
       // Process each group separately
       const parsedArray = groups.map((group) => {
         // If the group is exactly "[]", return an empty array
         if (group === "[]") return [];
-  
+
         // Otherwise, split by commas and trim each region
         return group.split(",").map((region) => region.trim());
       });
-  
+
       console.log("Formatted excluded_ph_region:", parsedArray);
       return parsedArray;
     } catch (error) {
       console.error("Error parsing excluded_ph_region:", regionString, error);
     }
-  
+
     return [[]]; // Default to an empty nested array if parsing fails
   };
-  
+
   const handleRun = async () => {
     setIsRunning(true);
     setLogs((prevLogs) => [...prevLogs, "Running operation..."]);
@@ -156,7 +156,6 @@ const App = () => {
           parsedInterests = [[]]; // Default to empty array if parsing fails
         }
       }
-      
 
       const requestBody = {
         user_id: 1, // Static user ID (update if dynamic)
@@ -182,7 +181,7 @@ const App = () => {
         ],
       };
 
-      console.log(`Campaign Data : ${JSON.stringify(requestBody)}`)
+      console.log(`Campaign Data : ${JSON.stringify(requestBody)}`);
 
       try {
         const response = await fetch(
@@ -273,7 +272,7 @@ const App = () => {
         "product",
         "start_date (YYYY-MM-DD)",
         "start_time (HH-MM-SS)",
-        "excluded_ph_region"
+        "excluded_ph_region",
       ],
       [
         "'",
@@ -291,7 +290,7 @@ const App = () => {
         "'",
         "YYYY-MM-DD",
         "HH-MM-SS",
-        `"Zamboanga Peninsula,Northern Mindanao,Davao Region,Soccsksargen,Caraga,Autonomous Region in Muslim Mindanao"`
+        `"Zamboanga Peninsula,Northern Mindanao,Davao Region,Soccsksargen,Caraga,Autonomous Region in Muslim Mindanao"`,
       ],
     ];
 
@@ -348,14 +347,24 @@ const App = () => {
             before running the operation.
           </li>
           <li>
-            Ensure the `interests_list` column follows this format: Use `/` as a
-            delimiter between interest groups - Example values: -{" "}
+            Ensure the `interests_list` and `exclude_ph_region` column follows
+            this format: Use `/` as a delimiter between interest groups -
+            Example values: -{" "}
             <b>
               `[] / Interest1, Interest2, Interest3 / Interest4, Interest5 `
             </b>
+            <li>
+              {" "}
+              <b>AND `[] / Davao, Mimaropa, Calabrzon / Ilocos, Davao `</b>
+            </li>
+            <li>
+              If all adsets have the same excluded regions don't insert
+              delimeter example <b>`Davao, Mimaropa, Calabrzon`</b> If only{" "}
+              <b>PH </b> leave it blank or []
+            </li>
           </li>
           <li>
-            Use <b>[]</b> for empty Interest List
+            Use <b>[]</b> for empty Interest List or leave it / / space
           </li>
           <li>
             The system will split these values automatically into groups before
