@@ -298,8 +298,47 @@ const App = () => {
     const blob = new Blob([csvContent], { type: "text/csv;charset=UTF-8" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "template.csv";
+    link.download = "campaign_creation_template.csv";
     link.click();
+  };
+
+  // Function to fetch regions and download them as CSV
+  const handleDownloadRegions = async () => {
+    try {
+      const response = await fetch(
+        "https://pgoccampaign.share.zrok.io/regions",
+        {
+          method: "GET", // Use GET or specify the appropriate method
+          headers: {
+            "Content-Type": "application/json",
+            skip_zrok_interstitial: "true", // Custom header
+          },
+        }
+      );
+
+      const regionsData = await response.json();
+
+      // Create CSV content with region_name, key, and country
+      const csvRows = [
+        ["id", "region_name", "key", "country"], // Header
+        ...regionsData.map((region: any) => [
+          region.id,
+          region.region_name,
+          region.region_key,
+          region.country_code,
+        ]), // Region data
+      ];
+      const csvContent = csvRows.map((row) => row.join(",")).join("\n");
+
+      // Create and download the CSV file
+      const blob = new Blob([csvContent], { type: "text/csv;charset=UTF-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "ph_regions.csv";
+      link.click();
+    } catch (error) {
+      console.error("Error fetching regions:", error);
+    }
   };
 
   return (
@@ -309,7 +348,7 @@ const App = () => {
       </div>
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold">
-          PGOC CAMPAIGN CREATION TESTING v1.5
+          PGOC CAMPAIGN CREATION TESTING v1.6
         </h1>
       </div>
 
@@ -373,16 +412,16 @@ const App = () => {
         </ul>
       </div>
 
-      <div className="flex mb-4 gap-4">
+      <div className="flex mb- gap-4">
         <div className="flex mb-4 gap-4">
-          <div className="flex flex-col gap-4 mt-10">
+          <div className="flex flex-col gap-4 mt-5">
             {/* Green Button */}
             <Button
               variant="contained"
               style={{
                 backgroundColor: "green",
                 color: "white",
-                width: "150px",
+                width: "200px",
               }}
               component="label"
               className="py-2"
@@ -394,7 +433,7 @@ const App = () => {
             {/* Red Button */}
             <Button
               variant="contained"
-              style={{ backgroundColor: "red", color: "white", width: "150px" }}
+              style={{ backgroundColor: "red", color: "white", width: "200px" }}
               onClick={handleRun}
               disabled={isRunning}
               className="py-2"
@@ -405,18 +444,26 @@ const App = () => {
             <Button
               variant="outlined"
               onClick={handleDownloadTemplate}
-              className="py-2 text-black"
-              style={{ width: "150px" }}
+              className="py-1 text-black"
+              style={{ width: "200px" }}
             >
               Download Template
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleDownloadRegions}
+              className="py-1 text-black"
+              style={{ width: "200px" }}
+            >
+              Download List of Regions
             </Button>
           </div>
         </div>
 
         <div
-          className="flex-1 ml-6 mt-4 bg-gray-900 text-white p-4 rounded-md"
+          className="flex-1 ml-6 mt-5 bg-gray-900 text-white p-4 rounded-md"
           style={{
-            height: "200px",
+            height: "220px",
             overflowY: "auto",
             fontFamily: "monospace",
           }}
